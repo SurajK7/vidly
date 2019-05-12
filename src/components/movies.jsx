@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { getMovies } from "../services/fakeMovieService";
+import Like from "./common/like";
 
 class Movies extends Component {
   state = {
@@ -20,6 +21,14 @@ class Movies extends Component {
     );
   }
 
+  handleLikeToggled = movie => {
+    movie.ifLiked = !movie.ifLiked;
+    let index = this.state.movies.findIndex(m => m._id === movie._id);
+    let movies = [...this.state.movies];
+    movies.splice(index, 1, movie);
+    this.setState({ movies });
+  };
+
   renderTable() {
     return this.state.movies.length ? (
       <table className="table">
@@ -30,6 +39,7 @@ class Movies extends Component {
             <th scope="col">Stock</th>
             <th scope="col">Rate</th>
             <th scope="col" />
+            <th scope="col" />
           </tr>
         </thead>
         <tbody>
@@ -39,6 +49,12 @@ class Movies extends Component {
               <td>{movie.genre.name}</td>
               <td>{movie.numberInStock}</td>
               <td>{movie.dailyRentalRate}</td>
+              <td>
+                <Like
+                  ifLiked={movie.ifLiked}
+                  onLikeToggled={() => this.handleLikeToggled(movie)}
+                />
+              </td>
               <td>
                 <button
                   className="btn-danger"

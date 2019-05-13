@@ -1,24 +1,28 @@
 import React, { Component } from "react";
 import { getMovies } from "../services/fakeMovieService";
 import Like from "./common/like";
+import Pagination from "./common/pagination";
+import { paginate } from "../utils/paginate";
 
 class Movies extends Component {
   state = {
-    movies: getMovies()
+    itemsPerPage: 4,
+    movies: getMovies(),
+    moviesOnCurrPage: [],
+    currentPage: 1
   };
 
-  handleDelete(movieId) {
-    this.setState({
-      movies: this.state.movies.filter(movie => movie._id !== movieId)
-    });
+  constructor() {
+    super();
+    const { movies, itemsPerPage } = this.state;
+    this.state.moviesOnCurrPage = paginate(1, itemsPerPage, movies);
   }
 
-  message() {
-    return this.state.movies.length ? (
-      <p>Showing {this.state.movies.length} movies in the database</p>
-    ) : (
-      <p>There are no movies in the database</p>
-    );
+  handleDelete(movieId) {
+    const { movies } = this.state;
+    this.setState({
+      movies: movies.filter(movie => movie._id !== movieId)
+    });
   }
 
   handleLikeToggled = movie => {
@@ -29,21 +33,37 @@ class Movies extends Component {
     this.setState({ movies });
   };
 
+  handlePageNav = pageNumber => {
+    const { movies, itemsPerPage } = this.state;
+    this.setState({
+      moviesOnCurrPage: paginate(pageNumber, itemsPerPage, movies),
+      currentPage: pageNumber
+    });
+  };
+
+  message() {
+    return this.state.moviesOnCurrPage.length ? (
+      <p>Showing {this.state.moviesOnCurrPage.length} movies on this page</p>
+    ) : (
+      <p>There are no movies on this page</p>
+    );
+  }
+
   renderTable() {
-    return this.state.movies.length ? (
+    return this.state.moviesOnCurrPage.length ? (
       <table className="table">
         <thead>
           <tr>
-            <th scope="col">Title</th>
-            <th scope="col">Genre</th>
-            <th scope="col">Stock</th>
-            <th scope="col">Rate</th>
-            <th scope="col" />
-            <th scope="col" />
+            <th>Title</th>
+            <th>Genre</th>
+            <th>Stock</th>
+            <th>Rate</th>
+            <th />
+            <th />
           </tr>
         </thead>
         <tbody>
-          {this.state.movies.map(movie => (
+          {this.state.moviesOnCurrPage.map(movie => (
             <tr key={movie._id}>
               <td>{movie.title}</td>
               <td>{movie.genre.name}</td>
@@ -71,10 +91,17 @@ class Movies extends Component {
   }
 
   render() {
+    const { movies, itemsPerPage, currentPage } = this.state;
     return (
       <React.Fragment>
         {this.message()}
         {this.renderTable()}
+        <Pagination
+          totalItems={movies.length}
+          itemsPerPage={itemsPerPage}
+          onPageNav={this.handlePageNav}
+          currentPage={currentPage}
+        />
       </React.Fragment>
     );
   }

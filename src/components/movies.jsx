@@ -8,20 +8,12 @@ class Movies extends Component {
   state = {
     itemsPerPage: 4,
     movies: getMovies(),
-    moviesOnCurrPage: [],
     currentPage: 1
   };
 
-  constructor() {
-    super();
-    const { movies, itemsPerPage } = this.state;
-    this.state.moviesOnCurrPage = paginate(1, itemsPerPage, movies);
-  }
-
   handleDelete(movieId) {
-    const { movies } = this.state;
     this.setState({
-      movies: movies.filter(movie => movie._id !== movieId)
+      movies: this.state.movies.filter(m => m._id !== movieId)
     });
   }
 
@@ -34,23 +26,21 @@ class Movies extends Component {
   };
 
   handlePageNav = pageNumber => {
-    const { movies, itemsPerPage } = this.state;
     this.setState({
-      moviesOnCurrPage: paginate(pageNumber, itemsPerPage, movies),
       currentPage: pageNumber
     });
   };
 
-  message() {
-    return this.state.moviesOnCurrPage.length ? (
-      <p>Showing {this.state.moviesOnCurrPage.length} movies on this page</p>
+  message(moviesOnCurrPage) {
+    return moviesOnCurrPage.length ? (
+      <p>Showing {moviesOnCurrPage.length} movies on this page</p>
     ) : (
       <p>There are no movies on this page</p>
     );
   }
 
-  renderTable() {
-    return this.state.moviesOnCurrPage.length ? (
+  renderTable(moviesOnCurrPage) {
+    return moviesOnCurrPage.length ? (
       <table className="table">
         <thead>
           <tr>
@@ -63,7 +53,7 @@ class Movies extends Component {
           </tr>
         </thead>
         <tbody>
-          {this.state.moviesOnCurrPage.map(movie => (
+          {moviesOnCurrPage.map(movie => (
             <tr key={movie._id}>
               <td>{movie.title}</td>
               <td>{movie.genre.name}</td>
@@ -92,10 +82,11 @@ class Movies extends Component {
 
   render() {
     const { movies, itemsPerPage, currentPage } = this.state;
+    const moviesOnCurrPage = paginate(currentPage, itemsPerPage, movies);
     return (
       <React.Fragment>
-        {this.message()}
-        {this.renderTable()}
+        {this.message(moviesOnCurrPage)}
+        {this.renderTable(moviesOnCurrPage)}
         <Pagination
           totalItems={movies.length}
           itemsPerPage={itemsPerPage}

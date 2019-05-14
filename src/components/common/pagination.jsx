@@ -1,8 +1,10 @@
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 
 class Paginantion extends Component {
   calculatePages() {
-    return Math.ceil(this.props.totalItems / this.props.itemsPerPage);
+    const { totalItems, itemsPerPage } = this.props;
+    return Math.ceil(totalItems / itemsPerPage);
   }
   createArray() {
     const array = [];
@@ -12,22 +14,20 @@ class Paginantion extends Component {
     return array;
   }
   render() {
-    return this.calculatePages() === 1 ? null : (
-      <nav aria-label="Page navigation">
+    const { currentPage, onPageNav, totalItems, itemsPerPage } = this.props;
+    return totalItems < itemsPerPage ? null : (
+      <nav>
         <ul className="pagination">
           {this.createArray().map(pageNumber => (
             <li
               className={
-                pageNumber === this.props.currentPage
-                  ? "page-item active"
-                  : "page-item"
+                pageNumber === currentPage ? "page-item active" : "page-item"
               }
               key={pageNumber}
             >
               <button
                 className="page-link"
-                onClick={() => this.props.onPageNav(pageNumber)}
-                active
+                onClick={() => onPageNav(pageNumber)}
               >
                 {pageNumber}
               </button>
@@ -38,5 +38,12 @@ class Paginantion extends Component {
     );
   }
 }
+
+Paginantion.propTypes = {
+  totalItems: PropTypes.number.isRequired,
+  itemsPerPage: PropTypes.number.isRequired,
+  currentPage: PropTypes.number.isRequired,
+  onPageNav: PropTypes.func.isRequired
+};
 
 export default Paginantion;

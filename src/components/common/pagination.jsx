@@ -14,20 +14,20 @@ class Paginantion extends Component {
     return array;
   }
   render() {
-    const { currentPage, onPageNav, totalItems, itemsPerPage } = this.props;
+    const { selectedPage, onPageSelect, totalItems, itemsPerPage } = this.props;
     return totalItems < itemsPerPage ? null : (
       <nav>
         <ul className="pagination">
           {this.createArray().map(pageNumber => (
             <li
               className={
-                pageNumber === currentPage ? "page-item active" : "page-item"
+                pageNumber === selectedPage ? "page-item active" : "page-item"
               }
               key={pageNumber}
             >
               <button
                 className="page-link"
-                onClick={() => onPageNav(pageNumber)}
+                onClick={() => onPageSelect(pageNumber)}
               >
                 {pageNumber}
               </button>
@@ -42,8 +42,8 @@ class Paginantion extends Component {
 Paginantion.propTypes = {
   totalItems: PropTypes.number.isRequired,
   itemsPerPage: PropTypes.number.isRequired,
-  currentPage: PropTypes.number.isRequired,
-  onPageNav: PropTypes.func.isRequired
+  selectedPage: PropTypes.number.isRequired,
+  onPageSelect: PropTypes.func.isRequired
 };
 
 export default Paginantion;

@@ -1,20 +1,14 @@
-import React, { Component } from "react";
+import React from "react";
 
-class Like extends Component {
-  formatLike() {
-    return this.props.ifLiked ? "" : "-o";
-  }
-
-  render() {
-    return (
-      <i
-        className={"fa fa-heart" + this.formatLike()}
-        aria-hidden="true"
-        onClick={this.props.onLikeToggled}
-        style={{ cursor: "pointer" }}
-      />
-    );
-  }
-}
+const Like = ({ onLikeToggled, ifLiked }) => {
+  return (
+    <i
+      className={ifLiked ? "fa fa-heart" : "fa fa-heart-o"}
+      aria-hidden="true"
+      onClick={onLikeToggled}
+      style={{ cursor: "pointer" }}
+    />
+  );
+};
 
 export default Like;

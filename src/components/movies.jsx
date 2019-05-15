@@ -1,15 +1,26 @@
 import React, { Component } from "react";
 import { getMovies } from "../services/fakeMovieService";
+import { getGenres } from "../services/fakeGenreService";
 import Like from "./common/like";
 import Pagination from "./common/pagination";
+import ListGroup from "./common/listGroup";
 import { paginate } from "../utils/paginate";
 
 class Movies extends Component {
   state = {
-    itemsPerPage: 4,
-    movies: getMovies(),
-    currentPage: 1
+    genres: [],
+    movies: [],
+    itemsPerPage: 2,
+    selectedPage: 1,
+    selectedGenre: { name: "All Genres" }
   };
+
+  componentDidMount() {
+    this.setState({
+      genres: [{ name: "All Genres" }, ...getGenres()],
+      movies: getMovies()
+    });
+  }
 
   handleDelete(movieId) {
     this.setState({
@@ -25,19 +36,13 @@ class Movies extends Component {
     this.setState({ movies });
   };
 
-  handlePageNav = pageNumber => {
-    this.setState({
-      currentPage: pageNumber
-    });
+  handlePageChange = pageNumber => {
+    this.setState({ selectedPage: pageNumber });
   };
 
-  message(moviesOnCurrPage) {
-    return moviesOnCurrPage.length ? (
-      <p>Showing {moviesOnCurrPage.length} movies on this page</p>
-    ) : (
-      <p>There are no movies on this page</p>
-    );
-  }
+  handleGenreChange = genre => {
+    this.setState({ selectedGenre: genre, selectedPage: 1 });
+  };
 
   renderTable(moviesOnCurrPage) {
     return moviesOnCurrPage.length ? (
@@ -81,19 +86,49 @@ class Movies extends Component {
   }
 
   render() {
-    const { movies, itemsPerPage, currentPage } = this.state;
-    const moviesOnCurrPage = paginate(currentPage, itemsPerPage, movies);
+    const {
+      movies,
+      itemsPerPage,
+      selectedPage,
+      genres,
+      selectedGenre
+    } = this.state;
+
+    const moviesOfCurrGenre =
+      selectedGenre.name === "All Genres"
+        ? movies
+        : movies.filter(movie => movie.genre._id === selectedGenre._id);
+
+    let moviesOnCurrPage = paginate(
+      selectedPage,
+      itemsPerPage,
+      moviesOfCurrGenre
+    );
+
     return (
-      <React.Fragment>
-        {this.message(moviesOnCurrPage)}
-        {this.renderTable(moviesOnCurrPage)}
-        <Pagination
-          totalItems={movies.length}
-          itemsPerPage={itemsPerPage}
-          onPageNav={this.handlePageNav}
-          currentPage={currentPage}
-        />
-      </React.Fragment>
+      <div className="row m-5">
+        <div className="col-3">
+          <ListGroup
+            items={genres}
+            onItemSelect={this.handleGenreChange}
+            selectedItem={selectedGenre}
+          />
+        </div>
+        <div className="col">
+          <p>
+            {moviesOnCurrPage.length
+              ? `Showing ${moviesOnCurrPage.length} movies on this page`
+              : "There are no movies on this page"}
+          </p>
+          {this.renderTable(moviesOnCurrPage)}
+          <Pagination
+            totalItems={moviesOfCurrGenre.length}
+            itemsPerPage={itemsPerPage}
+            onPageSelect={this.handlePageChange}
+            selectedPage={selectedPage}
+          />
+        </div>
+      </div>
     );
   }
 }

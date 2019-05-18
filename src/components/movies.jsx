@@ -1,32 +1,34 @@
 import React, { Component } from "react";
 import { getMovies } from "../services/fakeMovieService";
 import { getGenres } from "../services/fakeGenreService";
-import Like from "./common/like";
+import MoviesTable from "./moviesTable";
 import Pagination from "./common/pagination";
 import ListGroup from "./common/listGroup";
 import { paginate } from "../utils/paginate";
+import _ from "lodash";
 
 class Movies extends Component {
   state = {
     genres: [],
     movies: [],
-    itemsPerPage: 2,
+    itemsPerPage: 4,
     selectedPage: 1,
-    selectedGenre: { name: "All Genres" }
+    selectedGenre: { name: "All Genres" },
+    sortColumn: { field: "title", order: "asc" }
   };
 
   componentDidMount() {
     this.setState({
-      genres: [{ name: "All Genres" }, ...getGenres()],
+      genres: [{ _id: "", name: "All Genres" }, ...getGenres()],
       movies: getMovies()
     });
   }
 
-  handleDelete(movieId) {
+  handleDelete = movieId => {
     this.setState({
       movies: this.state.movies.filter(m => m._id !== movieId)
     });
-  }
+  };
 
   handleLikeToggled = movie => {
     movie.ifLiked = !movie.ifLiked;
@@ -44,53 +46,16 @@ class Movies extends Component {
     this.setState({ selectedGenre: genre, selectedPage: 1 });
   };
 
-  renderTable(moviesOnCurrPage) {
-    return moviesOnCurrPage.length ? (
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Genre</th>
-            <th>Stock</th>
-            <th>Rate</th>
-            <th />
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          {moviesOnCurrPage.map(movie => (
-            <tr key={movie._id}>
-              <td>{movie.title}</td>
-              <td>{movie.genre.name}</td>
-              <td>{movie.numberInStock}</td>
-              <td>{movie.dailyRentalRate}</td>
-              <td>
-                <Like
-                  ifLiked={movie.ifLiked}
-                  onLikeToggled={() => this.handleLikeToggled(movie)}
-                />
-              </td>
-              <td>
-                <button
-                  className="btn-danger"
-                  onClick={() => this.handleDelete(movie._id)}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    ) : null;
-  }
+  handleSort = sortColumn => {
+    this.setState({ sortColumn });
+  };
 
-  render() {
+  getPagedData = () => {
     const {
       movies,
       itemsPerPage,
       selectedPage,
-      genres,
+      sortColumn,
       selectedGenre
     } = this.state;
 
@@ -99,11 +64,34 @@ class Movies extends Component {
         ? movies
         : movies.filter(movie => movie.genre._id === selectedGenre._id);
 
+    const sortedMoviesOfCurrGenre = _.orderBy(
+      moviesOfCurrGenre,
+      sortColumn.field,
+      sortColumn.order
+    );
+
     let moviesOnCurrPage = paginate(
       selectedPage,
       itemsPerPage,
-      moviesOfCurrGenre
+      sortedMoviesOfCurrGenre
     );
+
+    return {
+      data: moviesOnCurrPage,
+      totalCount: sortedMoviesOfCurrGenre.length
+    };
+  };
+
+  render() {
+    const {
+      itemsPerPage,
+      selectedPage,
+      genres,
+      sortColumn,
+      selectedGenre
+    } = this.state;
+
+    const { totalCount, data } = this.getPagedData();
 
     return (
       <div className="row m-5">
@@ -116,13 +104,19 @@ class Movies extends Component {
         </div>
         <div className="col">
           <p>
-            {moviesOnCurrPage.length
-              ? `Showing ${moviesOnCurrPage.length} movies on this page`
+            {data.length
+              ? `Showing ${data.length} movies on this page`
               : "There are no movies on this page"}
           </p>
-          {this.renderTable(moviesOnCurrPage)}
+          <MoviesTable
+            moviesToRender={data}
+            sortColumn={sortColumn}
+            onDelete={this.handleDelete}
+            onLikeToggled={this.handleLikeToggled}
+            onSort={this.handleSort}
+          />
           <Pagination
-            totalItems={moviesOfCurrGenre.length}
+            totalItems={totalCount}
             itemsPerPage={itemsPerPage}
             onPageSelect={this.handlePageChange}
             selectedPage={selectedPage}

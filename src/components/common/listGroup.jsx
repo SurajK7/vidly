@@ -11,13 +11,12 @@ const ListGroup = ({
     <ul className="list-group">
       {items.map(item => (
         <li
-          key={item[textProperty]}
+          key={item[valueProperty]}
           className={
             item[textProperty] === selectedItem[textProperty]
-              ? "list-group-item active"
-              : "list-group-item"
+              ? "clickable list-group-item active"
+              : "clickable list-group-item"
           }
-          style={{ cursor: "pointer" }}
           onClick={() => onItemSelect(item)}
         >
           {item[textProperty]}

@@ -3,10 +3,8 @@ import React from "react";
 const Like = ({ onLikeToggled, ifLiked }) => {
   return (
     <i
-      className={ifLiked ? "fa fa-heart" : "fa fa-heart-o"}
-      aria-hidden="true"
+      className={ifLiked ? "clickable fa fa-heart" : "clickable fa fa-heart-o"}
       onClick={onLikeToggled}
-      style={{ cursor: "pointer" }}
     />
   );
 };
